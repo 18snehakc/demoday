@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>PG Complaint Management</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background-color:lightblue;
+        }
+
+        .box {
+            width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color:white;
+
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input, textarea, button {
+            padding: 10px;
+        }
+
+        button {
+            background-color: blue;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .complaint {
+            background-color: #eeeeee;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="box">
+
+        <h1> 🛏️PGMate</h1>
+
+        <input id="name" type="text" placeholder="Enter your name">
+
+        <input id="room" type="text" placeholder="Enter room number">
+
+        
+        <input id="category" type="text" placeholder="Enter category">
+
+        <textarea id="description"
+            placeholder="Enter your complaint"></textarea>
+
+        <button onclick="submitComplaint()">
+            Submit Complaint
+        </button>
+
+        <button onclick="showComplaints()">
+            View Complaints
+        </button>
+
+        <h2>Complaints</h2>
+        <input id="search"
+    type="text"
+    placeholder="Search complaints"
+    oninput="searchComplaints()">
+
+        
+
+        <div id="complaints"></div>
+
+    </div>
+
+
+    <script>
+
+        
+        async function submitComplaint() {
+
+            let name = document.getElementById("name").value;
+            let room = document.getElementById("room").value;
+            let category = document.getElementById("category").value;
+            let description = document.getElementById("description").value;
+
+        
+            if (name == "" || room == "" ||
+                category == "" || description == "") {
+
+                alert("Please fill all fields");
+                return;
+            }
+
+            let complaint = {
+                name: name,
+                room: room,
+                category: category,
+                description: description
+            };
+
+            let response = await fetch(
+                "http://localhost:4000/complaints",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(complaint)
+                }
+            );
+
+            if (response.ok) {
+
+                alert("Complaint submitted!");
+
+                
+                document.getElementById("name").value = "";
+                document.getElementById("room").value = "";
+                document.getElementById("category").value = "";
+                document.getElementById("description").value = "";
+            }
+        }
+
+
+        
+        async function showComplaints() {
+
+            let response = await fetch(
+                "http://localhost:4000/complaints"
+            );
+
+            let complaints = await response.json();
+
+            let box = document.getElementById("complaints");
+
+            box.innerHTML = "";
+
+            complaints.forEach(function(complaint) {
+
+                box.innerHTML += `
+                    <div class="complaint">
+
+                        <b>Name:</b> ${complaint.name}<br>
+
+                        <b>Room:</b> ${complaint.room}<br>
+
+                        <b>Category:</b> ${complaint.category}<br>
+
+                        <b>Complaint:</b> ${complaint.description}<br>
+
+                        <b>Status:</b> ${complaint.status}
+
+                    </div>
+                `;
+            });
+
+            
+            searchComplaints();
+        }
+
+
+        
+        function searchComplaints() {
+
+            let searchText =
+                document.getElementById("search").value.toLowerCase();
+
+            let complaintBoxes =
+                document.querySelectorAll(".complaint");
+
+            complaintBoxes.forEach(function(box) {
+
+                let complaintText =
+                    box.innerText.toLowerCase();
+
+                if (complaintText.includes(searchText)) {
+
+                    box.style.display = "block";
+
+                } else {
+
+                    box.style.display = "none";
+                }
+            });
+        }
+
+
+        
+
+    </script>
+
+</body>
+
+</html>
